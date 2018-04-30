@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Tic Tac Toe Game</title>
+	<style type="text/css">
+
+		* {
+			margin: 0px;
+			padding: 0px;
+			border: 0px;
+			font-family: Helvetica;
+		}
+
+		.flex-container {
+			display: flex;
+  			justify-content: center;
+  			align-items: center;
+  			height: 100vh;
+  			background-color: #eee
+		}
+
+		.container {	
+			width: 456px;
+		}
+
+		.header {
+			font-size: 40px;
+			font-weight: bold;
+			text-align: center;
+			margin: 15px;
+		}
+
+		.msg {
+			font-size: 16px;
+			text-align: center;
+			margin: 20px;
+		}
+
+		.choose {
+			display: inline-block;
+			width: inherit;
+			font-size: 28px;
+			font-weight: bold;
+			text-align: center;
+			cursor: pointer;
+		}
+
+		#chooseX {
+			margin-right: 40px;
+		}
+
+		.board {
+			visibility: hidden;
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			background: #ddd;
+		}
+
+		.square {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 150px;
+			height: 150px;
+			border: 1px solid #a9a9a9;
+			font-size: 40px;
+			font-weight: bold;
+		}
+
+		.square:hover {
+			background-color: #fff;
+			cursor: pointer;
+		}
+
+	</style>
+</head>
+<body>
+ </div>
+	<div class="flex-container">
+		<div class="container">
+			<div class="header">Tic Tac Toe</div>
+			<div class="msg">Choose your side!</div>
+			<div class="choose">
+				<span id="chooseX">X</span>
+				<span id="chooseO">O</span>
+			</div>
+			<div class="board">
+				<div class="square" onclick="claim(this)"></div>
+				<div class="square" onclick="claim(this)"></div>
+				<div class="square" onclick="claim(this)"></div>
+				<div class="square" onclick="claim(this)"></div>
+				<div class="square" onclick="claim(this)"></div>
+				<div class="square" onclick="claim(this)"></div>
+				<div class="square" onclick="claim(this)"></div>
+				<div class="square" onclick="claim(this)"></div>
+				<div class="square" onclick="claim(this)"></div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+
+		// splash screen for choosing icon
+		document.getElementById("chooseX").addEventListener("click", function() {
+			playerSign = "X";
+			computerSign = "O";
+			document.getElementsByClassName("choose")[0].style.visibility = "hidden";
+			document.getElementsByClassName("board")[0].style.visibility = "visible";
+			document.getElementsByClassName("msg")[0].innerHTML = "You are playing as \"X\". Great choice!<br>Now, click one of the blocks to start!";
+		})
+
+		document.getElementById("chooseO").addEventListener("click", function() {
+			playerSign = "O";
+			computerSign = "X";
+			document.getElementsByClassName("choose")[0].style.visibility = "hidden";
+			document.getElementsByClassName("board")[0].style.visibility = "visible";
+			document.getElementsByClassName("msg")[0].innerHTML = "You are playing as \"O\". I'd prefer the X!<br>Whatever, click one of the blocks to start!";
+		})
+
+		// declaring variables
+		var tiles = document.getElementsByClassName("square");
+		var state = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+		var game = true;
+
+		var HUMAN = false;
+		var COMPUTER = true;
+
+		var HUMVAL = -1;
+		var COMVAL = 1;
+
+		var winningCombos = [
+							[0, 1, 2],
+							[3, 4, 5],
+							[6, 7, 8],
+							[0, 3, 6],
+							[1, 4, 7],
+							[2, 5, 8],
+							[0, 4, 8],
+							[2, 4, 6]	
+							];
+
+		function reset() {
+			for (var x = 0; x < 9; x++) {
+				tiles[x].innerHTML = "";
+				state[x] = 0;
+			}
+			document.getElementsByClassName("msg")[0].innerHTML = "No matter how smart you are<br>a tie is gonna be all you get at most :)";
+			game = true;
+		}
+
+		function checkGameStatus() {
+			
+			var boardStatus = state.filter(item => item == 0);
+			if (boardStatus.length == 0) {
+				document.getElementsByClassName("msg")[0].innerHTML = "<a onclick='reset()' style='cursor:pointer'>It's a TIE!<br>Start over?</a>";
+			}
+		} 
+
+		function claim(clicked) {
+			if (!game) {
+				return;
+			}
+
+			for (var x = 0; x < 9; x++) {
+				if (tiles[x] == clicked && state[x] == 0) {
+					set(x, HUMAN);
+					callAI();
+				}
+			}
+		}
+
+		function set(index, player) {
+			if (!game) {
+				return;
+			}
+
+			if (state[index] == 0) {
+				
+				if (player == HUMAN) {
+					tiles[index].innerHTML = playerSign;
+					state[index] = HUMVAL;
+				} else {
+					tiles[index].innerHTML = computerSign;
+					state[index] = COMPUTER;
+				}
+
+				if (checkWin(state, player)) {
+					game = false;
+					document.getElementsByClassName("msg")[0].innerHTML = "<a onclick='reset()' style='cursor:pointer'>You LOST!<br>Start over?</a>";
+				}
+			}
+		}
+
+		function checkWin(board, player) {
+			var value = player == HUMAN ? HUMVAL : COMVAL;
+
+			// below x = 8 because there are 8 different ways of winning
+			for (var x = 0; x < 8; x++) {
+				
+				var win = true;
+
+				for (y = 0; y < 3; y++) {
+					if (board[winningCombos[x][y]] != value) {
+						win = false;
+						break;
+					}
+				}
+
+				if (win) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		function checkFull(board) {
+			for (var x = 0; x < 9; x++) {
+				if (board[x] == 0) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		function callAI() {
+			turnAI(state, 0, COMPUTER);
+			checkGameStatus();
+		}
+
+		// minimax algorithm
+		function turnAI(board, depth, player) {
+			if (checkWin(board, !player)) {
+				return -10 - depth;
+			}
+
+			if (checkFull(board)) {
+				return 0;
+			}
+
+			var value = player == HUMAN ? HUMVAL : COMVAL;
+			var max = -Infinity;
+			var index = 0;
+
+			for (var x = 0; x < 9; x++) {
+				if (board[x] == 0) {
+					var newBoard = board.slice();
+					newBoard[x] = value;
+
+					var moveal = -turnAI(newBoard, depth + 1, !player);
+
+					if (moveal > max) {
+						max = moveal;
+						index = x;
+					}
+				}
+			}
+
+			if (depth == 0) {
+				set(index, COMPUTER);
+			}
+
+			return max;
+		}
+	</script>
+</body>
+</html>
